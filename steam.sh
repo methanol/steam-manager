@@ -8,9 +8,11 @@ set -e
 
 # TODO:
 # - Renice Server process
+# - check port reservations
 
 # Empty == default port (27015)
 SERVER_PORT="27030"
+MAXPLAYERS="10"
 
 APP_ID="740"
 GAME="csgo"
@@ -21,7 +23,7 @@ GAME_MODE="1"
 TICKRATE="128"
 
 # Default startparameter
-START_PARAM_DEFAULT="-pidfile srcds.pid -console -usercon -nobots -game $GAME +hostport $SERVER_PORT -tickrate $TICKRATE"
+START_PARAM_DEFAULT="-pidfile srcds.pid -console -usercon -nobots -game $GAME +hostport $SERVER_PORT -tickrate $TICKRATE +maxplayers $MAXPLAYERS"
 
 # DONT CHANGE ANYTHING FROM HERE #
 if [ ! -z "$2" ]; then
@@ -136,6 +138,10 @@ case "$1" in
     install_steamcmd
     update_app
     initalization
+  ;;
+
+  installsteam)
+    install_steamcmd
   ;;
 
   start)
