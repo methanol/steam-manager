@@ -34,6 +34,7 @@ else
   GAME_ROOT=$(dirname $SCRIPT_PATH)
   TMUX_SESSION_NAME=${GAME_ROOT##*/}
 fi
+PID="$(cat ${GAME_ROOT}/csgo/srcds.pid)"
 
 # SteamCMD
 STEAMCMD_DIR="${GAME_ROOT}/steamcmd"
@@ -77,14 +78,15 @@ function start() {
 function stop() {
   echo -n "Stopping server ${TMUX_SESSION_NAME}..."
   tmux kill-session -t $TMUX_SESSION_NAME 2> /dev/null || (echo "FAILED"; exit -1)
+  kill $PID || (echo "FAILED"; exit -1)
   echo "OK"
 }
 
 function status() {
   echo -n "Server is "
+  kill -0 $PID || (echo "STOPPED"; exit -1)
   tmux has-session -t $TMUX_SESSION_NAME 2> /dev/null || (echo "STOPPED"; exit -1)
   echo "running"
-  #kill -0 $(cat ${GAME_ROOT/csgo/srcds.pid})
 }
 
 function console() {
@@ -94,6 +96,8 @@ function console() {
 function info() {
   SERVERNAME=`cat ${GAME_ROOT}/csgo/cfg/server.cfg | grep hostname`
   SERVERNAME_FILTERED=${SERVERNAME##*hostname}
+
+  NICE="$(ps -o nice -p $PID | tail -n 1 | tr -d ' ')"
 
   case "${GAME_TYPE}${GAME_MODE}" in
     00)
@@ -121,12 +125,13 @@ function info() {
     ;;
   esac
 
-  echo "Summary from ${TMUX_SESSION_NAME}:"
-  echo "Servername: $SERVERNAME_FILTERED"
-  echo "Game: ${GAME} (${APP_ID})"
-  echo "Port: ${SERVER_PORT}"
-  echo "Tickrate: ${TICKRATE}"
-  echo "Gamemode: ${GAMEMODE}"
+  echo "### Summary ###"
+  echo "tmux session name: $TMUX_SESSION_NAME"
+  echo "game: $GAME (${APP_ID})"
+  echo "port: $SERVER_PORT"
+  echo "PID: $PID"
+  echo "nice: $NICE"
+  echo -n "status: "; status
 }
 
 function usage() {
